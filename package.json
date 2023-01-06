@@ -1,0 +1,22 @@
+{
+  "name": "sbs-diamondstudios-dev_api",
+  "version": "1.0.0",
+  "description": "A web API operated for sbs.diamondstudios.dev",
+  "main": "build/index.js",
+  "scripts": {
+    "test": "npm i && tsc && cd build && node run index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diamonddev01/sbs_api.git"
+  },
+  "keywords": [
+    "API"
+  ],
+  "author": "DiamondDev01",
+  "license": "GPL_v3",
+  "bugs": {
+    "url": "https://github.com/diamonddev01/sbs_api/issues"
+  },
+  "homepage": "https://github.com/diamonddev01/sbs_api#readme"
+}
