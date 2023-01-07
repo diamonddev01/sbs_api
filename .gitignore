@@ -1,0 +1,3 @@
+*.secret.ts
+node_modules
+build
