@@ -3,6 +3,7 @@ import {QuickDB} from 'quick.db';
 import { createHash, randomBytes } from 'crypto';
 import { makeRequest } from './MakeHttpsRequest';
 import { Client_ID, Client_Secret, Redirect_Uri } from '../config/tokens.secret';
+import { TokenTTL } from '../config/mainConfig';
 
 export interface UserInfo {
     api_key: string; // User api key
@@ -38,6 +39,12 @@ export interface DiscordAPIUser {
     premium_type: number;
 }
 
+interface token {
+    hashed_api_key: string;
+    expires_at: number;
+    connected_user: string;
+}
+
 class TokenDB extends QuickDB {
     constructor() {
         super({
@@ -48,12 +55,30 @@ class TokenDB extends QuickDB {
 
     // Take a token -> user id
     async getUserid(token: string): Promise<string | null> {
-        const d = await this.get<string>(token);
-        return d;
+        const d = await this.get<token>(token);
+
+        if(!d) return null;
+
+        // Check the token is valid
+        if(Date.now() > d?.expires_at) {
+            return null; // expired returns null as the api treats this as an invalid key
+        }
+
+        return d.connected_user;
     }
 
     async digestKey(token: string): Promise<string> {
         return hashAPIKey(token);
+    }
+
+    async addNewToken(token: string, connected_user: string): Promise<token> {
+        let v = await this.set<token>(token, {
+            hashed_api_key: token,
+            expires_at: Date.now() + TokenTTL,
+            connected_user
+        });
+
+        return v;
     }
 }
 
@@ -69,6 +94,43 @@ class UserDB extends QuickDB {
     async getUserData(user_id: string): Promise<UserInfo | null> {
         const d = await this.get<UserInfo>(user_id);
         return d;
+    }
+
+    async refresh(user_id: string): Promise<UserInfo | null> {
+        // get current data
+        const old_user = await this.getUserData(user_id);
+        if(!old_user) return null;
+        const {refresh_token} = old_user;
+
+        // Reset oauth code
+        const DiscordRes = await makeRequest<DiscordOAUTHToken>(`https://discord.com/api/v10/oauth2/token`, {
+            form: {
+                client_id: Client_ID,
+                client_secret: Client_Secret,
+                grant_type: "refresh_token",
+                refresh_token
+            }
+        }, true);
+
+        if(!DiscordRes) return null;
+        const token = `Bearer ${DiscordRes.body.access_token}`;
+
+        const discordUser = await makeRequest<DiscordAPIUser>(`https://discord.com/api/v10/users/@me`, {
+            method: "GET",
+            headers: {
+                "Authorization": token
+            }
+        }, true);
+
+        if(!discordUser || (discordUser.body as unknown as any).code) return null; // Bad token
+        console.log(`[!] REFRESH: ${discordUser.body.username}#${discordUser.body.discriminator}`);
+
+        const new_user = {...old_user};
+        new_user.access_token = DiscordRes.body.access_token;
+        new_user.refresh_token = DiscordRes.body.refresh_token;
+        new_user.token_expires = Date.now() + DiscordRes.body.expires_in;
+
+        return new_user;
     }
 
     async callback(oauth_token: string, reset?: boolean): Promise<{user: UserInfo, key: string} | null> {
@@ -121,7 +183,7 @@ class UserDB extends QuickDB {
 
         // Set this data
         this.set(data.id, user);
-        db.token.set(api_key.hashedApiKey, data.id);
+        db.token.addNewToken(api_key.hashedApiKey, data.id);
 
         return {user, key: api_key.apiKey};
     }
