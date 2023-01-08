@@ -61,6 +61,8 @@ class TokenDB extends QuickDB {
 
         // Check the token is valid
         if(Date.now() > d?.expires_at) {
+            // Delete expired token
+            this.delete(token);
             return null; // expired returns null as the api treats this as an invalid key
         }
 
@@ -128,7 +130,7 @@ class UserDB extends QuickDB {
         const new_user = {...old_user};
         new_user.access_token = DiscordRes.body.access_token;
         new_user.refresh_token = DiscordRes.body.refresh_token;
-        new_user.token_expires = Date.now() + DiscordRes.body.expires_in;
+        new_user.token_expires = Date.now() + DiscordRes.body.expires_in * 1000;
 
         return new_user;
     }
@@ -175,7 +177,7 @@ class UserDB extends QuickDB {
             api_key: api_key.hashedApiKey,
             active: false,
             allowed_access: false,
-            token_expires: Date.now() + init_request.expires_in,
+            token_expires: Date.now() + init_request.expires_in * 1000,
             access_token: init_request.access_token,
             refresh_token: init_request.refresh_token,
             user_id: data.id

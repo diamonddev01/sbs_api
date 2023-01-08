@@ -69,6 +69,13 @@ api_router.get('/@me', async (req, res) => {
         }
     }, true);
 
+    if(discord_data && (discord_data as unknown as any).code) {
+        // Invalid discord oauth
+        // re-auth needed
+        db.users.refresh(user_id);
+        res.redirect('./@me');
+    }
+
     return res.send(discord_data.body);
 })
 
