@@ -1,8 +1,9 @@
 import express from 'express';
-import * as path from 'path';
+import * as cookie_parser from 'cookie-parser';
 import { router } from '../routes/routing';
 
 export const app = express(); // Create a webserver and then export it for use in index.ts
+app.use(cookie_parser.default()); // Use cookie parser in code
 
 // Webserver configuration
 export const port = 3000;

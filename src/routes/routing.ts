@@ -16,15 +16,48 @@ router.get('/', (req, res) => {
 // Gets favicon
 router.get('/favicon.ico', (req, res) => {
     res.sendFile(resolve("../public/favicon.ico"));
+});
+
+router.get('/cb', async (req, res) => {
+    const code = req.query.code;
+
+    if(code == "1") {
+        // Bad code submitted
+        return res.status(401).send(`<h1>Sorry! Your auth request failed.</h1><p>There isnt much we can help with other than suggest you try again...</p><br><a href="/">Home</a>`);
+    }
+
+    if(code == "2") {
+        // Good code submitted
+
+        // Get cookie
+        const auth = req.cookies.Authorization;
+        if(!auth) {
+            return res.status(401).send(`<h1>Sorry! Your auth request failed.</h1><p>There isnt much we can help with other than suggest you try again...</p><br><a href="/">Home</a>`); // bad auth
+        }
+
+        // Read auth info
+        const api_hash = await db.token.digestKey(auth);
+        if(!api_hash) return res.status(401).send(`<h1>Sorry! Your auth request failed.</h1><p>There isnt much we can help with other than suggest you try again...</p><br><a href="/">Home</a>`); // bad auth
+        const user_id = await db.token.getUserid(api_hash);
+        if(!user_id) return res.status(401).send(`<h1>Sorry! Your auth request failed.</h1><p>There isnt much we can help with other than suggest you try again...</p><br><a href="/">Home</a>`); // bad auth
+        const user = await db.users.get<UserInfo>(user_id);
+        if(!user) return res.status(401).send(`<h1>Sorry! Your auth request failed.</h1><p>There isnt much we can help with other than suggest you try again...</p><br><a href="/">Home</a>`); // bad auth
+        return res.status(200).send(`<h2>Auth succcess</h2><p>Logged in as ${user.user_id} (user_id)</p><a href='/'>Home</a>`);
+    }
+
+    return res.redirect('/');
 })
 
 
 // Primary routing service.
 // Ignores the /api/ route
 // Gets all information from fs
+const ignore_routes = ['api', 'favicon.ico', 'cb'];
 router.use(async (req, res, next) => {
     // Go to NEXT for all following paths
-    if(req.path.startsWith('/api') || req.path == '/' || req.path.toLowerCase() == "/favicon.ico") {
+    const path_1 = req.path.split('/');
+    path_1.shift();
+    if(ignore_routes.includes(path_1[0].toLowerCase()) || req.path == "/") {
         next();
         return;
     }
@@ -81,4 +114,5 @@ router.use(async (req, res, next) => {
 
 // Load other routes.
 import { api_router } from "./api";
+import { UserInfo, db } from "../assistive_functions/TokenManager";
 router.use('/api', api_router);
