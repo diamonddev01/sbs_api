@@ -45,7 +45,6 @@ api_router.get('/@me', async (req, res) => {
     // read auth info
 
     const return_bad = (c: 401 | 403): any => {
-        console.log(c);
         if(c == 401) return res.status(401).send({code: 401, message: "Unauthorized", error: {token: 'missing'}});
         if(c == 403) return res.status(403).send({code: 403, message: "Forbidden", error: {auth: 'none'}});
     }
