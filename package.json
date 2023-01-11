@@ -4,7 +4,9 @@
   "description": "A web API operated for sbs.diamondstudios.dev",
   "main": "build/index.js",
   "scripts": {
-    "test": "npm i && tsc && cd build && node index.js"
+    "test": "npm i && tsc && cd build && node index.js",
+    "build": "npm i && tsc",
+    "run": "cd build && node index.js"
   },
   "repository": {
     "type": "git",

@@ -1,0 +1,81 @@
+:root {
+    --button_main: #A7C7E7;
+    --button_text: black;
+    --button_alt: #fff;
+    --button_alt_text: #000;
+    --purple: rgb(123, 31, 162);
+    --violet: rgb(103, 58, 183);
+    --pink: rgb(244, 143, 177);
+}
+
+.container, .center {
+    margin: auto;
+    width: 50%;
+    padding: 10px;
+    text-align: center;
+    vertical-align: center;
+    text-align: center;
+}
+
+#clicker_button {
+    background-color: var(--button_main);
+    color: var(--button_text);
+    font-size: 20px;
+    padding: 32px;
+    border-radius: 10px;
+}
+
+#purchase_items {
+    text-align: center;
+    display: inline-block;
+    width: 100%;
+}
+
+#purchase_items > .item {
+    margin: 1px;
+    width: 20%;
+    text-align: center;
+    border: 1px solid gray;
+    display: inline-block;
+}
+
+#item-id {
+    display: none;
+}
+
+.common {
+    color: black;
+}
+
+.rare {
+    color: green;
+}
+
+.epic {
+    color: purple;
+}
+
+@keyframes legendary-pan {
+    from {
+        background-position: 0% center;
+    }
+
+    to {
+        background-position: -200% center;
+    }
+}
+
+.legendary {
+    animation: legendary-pan 3s linear infinite;
+    background: linear-gradient(
+        to right,
+        var(--purple),
+        var(--violet),
+        var(--pink),
+        var(--purple)
+    );
+    background-size: 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}

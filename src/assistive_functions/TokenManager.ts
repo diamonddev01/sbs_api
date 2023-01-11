@@ -13,6 +13,13 @@ export interface UserInfo {
     access_token: string; // The discord api token needed for this user
     refresh_token: string; // The discord api token that can be used to refresh for a new token
     user_id: string; // The users discord id
+
+    games: {
+        clicker: {
+            balance: number;
+            upgrades: string[]; // String array of upgrades.
+        }
+    }
 }
 
 interface DiscordOAUTHToken {
@@ -95,6 +102,13 @@ class UserDB extends QuickDB {
     // user_id -> UserInfo
     async getUserData(user_id: string): Promise<UserInfo | null> {
         const d = await this.get<UserInfo>(user_id);
+
+        if(d) d.games = {
+            clicker: {
+                upgrades: d?.games?.clicker?.upgrades || [],
+                balance: d?.games?.clicker?.balance || 0
+            }
+        }
         return d;
     }
 
@@ -173,6 +187,8 @@ class UserDB extends QuickDB {
         // generate token and user profile
         const api_key = await generateAPIKey();
 
+        const old_user = await db.users.getUserData(data.id);
+
         const user: UserInfo = {
             api_key: api_key.hashedApiKey,
             active: false,
@@ -180,7 +196,14 @@ class UserDB extends QuickDB {
             token_expires: Date.now() + init_request.expires_in * 1000,
             access_token: init_request.access_token,
             refresh_token: init_request.refresh_token,
-            user_id: data.id
+            user_id: data.id,
+
+            games: {
+                clicker: {
+                    upgrades: old_user?.games.clicker.upgrades || [],
+                    balance: old_user?.games.clicker.balance || 0
+                }
+            }
         }
 
         // Set this data

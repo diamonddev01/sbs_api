@@ -53,6 +53,7 @@ router.get('/cb', async (req, res) => {
 // Ignores the /api/ route
 // Gets all information from fs
 const ignore_routes = ['api', 'favicon.ico', 'cb'];
+const no_auth: string[] = ["/css/index.css", 'js/index.js'];
 router.use(async (req, res, next) => {
     // Go to NEXT for all following paths
     const path_1 = req.path.split('/');
@@ -67,6 +68,19 @@ router.use(async (req, res, next) => {
         // Redirect to /
         res.redirect(308, '/');
         return; // Exit the handler
+    }
+
+    // Check if a file must require auth.
+
+    if(!no_auth.includes(req.path.toLowerCase())) {
+        // Get auth info
+        const auth_info = req.headers.authorization || req.cookies.Authorization;
+        if(!auth_info) return res.status(401).send("<h1>Bad Auth</h1><p><a href='/'>Home</a></p>");
+        const tkn = await db.token.digestKey(auth_info);
+        if(!tkn) return;
+        const user = await db.users.getUserData((await db.token.getUserid(tkn)) || "b");
+
+        if(!user) return res.status(401).send("<h1>Bad Auth</h1><p><a href='/'>Home</a></p>");
     }
 
     let path = req.path;

@@ -1,7 +1,3 @@
-body {
-    text-align: center;
-}
-
 #welcome_and_hello {
     clear: both;
     overflow: auto;
@@ -19,18 +15,4 @@ body {
 
 #username_tag {
     margin-bottom: 10px;
-}
-
-h1 {
-    font-size: 50px;
-    line-height: 50px;
-}
-
-h2 {
-    font-size: 30px;
-    line-height: 30px;
-}
-
-h3 {
-    font-size: 24px;
 }
