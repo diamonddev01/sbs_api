@@ -12,6 +12,10 @@ let loaded = false;
 
 KILL.onclick = (e) => {
     loaded = false;
+    save_balance();
+
+    // send to /
+    window.location.href = "/";
 }
 
 let money = 0;
@@ -20,11 +24,16 @@ let money = 0;
 coin_container.innerText = "0 | LOADING FROM DB";
 updateButtonText();
 loadData();
-setInterval(saveLoop, 2000);
+setInterval(saveLoop, 10000);
 setInterval(tick_money, 1000); // Loads the second by second interval
 
 function saveLoop() {
     if(!loaded) return;
+    // Flash exit button
+    KILL.style["background-color"] = "blue";
+        setTimeout((element) => {
+            element.style["background-color"] = "";
+        }, 500, KILL);
     save_balance();
 }
 

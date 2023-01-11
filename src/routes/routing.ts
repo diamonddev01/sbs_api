@@ -53,7 +53,7 @@ router.get('/cb', async (req, res) => {
 // Ignores the /api/ route
 // Gets all information from fs
 const ignore_routes = ['api', 'favicon.ico', 'cb'];
-const no_auth: string[] = ["/css/index.css", 'js/index.js'];
+const no_auth: string[] = ["/css/index.css", '/js/index.js/', '/css/all.css'];
 router.use(async (req, res, next) => {
     // Go to NEXT for all following paths
     const path_1 = req.path.split('/');
